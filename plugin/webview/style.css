@@ -1,0 +1,646 @@
+/* Wrap 3D — тёмная тема в духе Photoshop. */
+
+:root {
+  --bg: #323232;
+  --bg-deep: #262626;
+  --bar: #3a3a3a;
+  --ctl: #4b4b4b;
+  --ctl-hover: #595959;
+  --ctl-border: #5e5e5e;
+  --field: #252525;
+  --field-border: #4a4a4a;
+  --border: #1f1f1f;
+  --text: #dddddd;
+  --text-dim: #a3a3a3;
+  --accent: #2d7ff0;
+  --accent-hover: #4a93f5;
+  --ok: #8fce8f;
+  --err: #ff7b6e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Узкая панель: вьюпорт сверху, параметры снизу. Широкая: параметры справа. */
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 58%;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 680px) {
+  .body {
+    flex-direction: row;
+  }
+  .side {
+    flex: 0 0 300px;
+    max-height: none;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+}
+
+/* ---------- шапка ---------- */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  background: var(--bar);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* ---------- переключатели-сегменты ---------- */
+
+.seg {
+  display: flex;
+}
+
+/* Выбор из нескольких вариантов в панели параметров: кнопки переносятся на вторую строку. */
+.seg.wide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+
+.seg.wide .seg-btn {
+  border-left-width: 1px;
+  border-radius: 3px;
+}
+
+.seg-btn {
+  height: 20px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--ctl);
+  border: 1px solid var(--ctl-border);
+  border-left-width: 0;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seg-btn:first-child {
+  border-left-width: 1px;
+  border-radius: 3px 0 0 3px;
+}
+
+.seg-btn:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.seg-btn.solo {
+  border-left-width: 1px;
+  border-radius: 3px;
+}
+
+.seg-btn:hover:not(:disabled):not(.active) {
+  color: var(--text);
+  background: var(--ctl-hover);
+}
+
+.seg-btn.active {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.seg-btn:disabled {
+  opacity: 0.45;
+}
+
+/* ---------- вьюпорт ---------- */
+
+#viewport {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 150px;
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+
+/* Рамка документа: приглушённая шахматка — прозрачные пиксели, как в Photoshop. */
+#docframe {
+  position: absolute;
+  display: none;
+  background-color: #cdcdcd;
+  background-image: conic-gradient(#bababa 25%, #cdcdcd 0 50%, #bababa 0 75%, #cdcdcd 0);
+  background-size: 16px 16px;
+  box-shadow: 0 0 0 1px #000000;
+}
+
+/* Снимок документа; прозрачность задаётся из параметров. */
+#backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+#gl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+/* Редактор контура: плоское поле поверх снимка документа, 3D-вид на это время скрыт. */
+#editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+#viewport.contour #editor {
+  display: block;
+}
+
+#viewport.contour #gl {
+  visibility: hidden;
+}
+
+#hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.vp-tools {
+  position: absolute;
+  top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vp-left {
+  left: 6px;
+  gap: 0;
+}
+
+.vp-right {
+  right: 6px;
+}
+
+.vp-second {
+  top: 32px;
+  gap: 6px;
+}
+
+/* Поверх картинки выключенные кнопки остаются непрозрачными, иначе сквозь них виден фон. */
+.vp-tools .seg-btn:disabled {
+  opacity: 1;
+  color: #767676;
+  background: #3a3a3a;
+  border-color: #4a4a4a;
+}
+
+.btn.wide {
+  grid-column: 1 / -1;
+}
+
+.zoom {
+  padding: 2px 6px;
+  font-size: 11px;
+  color: var(--text);
+  background: rgba(38, 38, 38, 0.85);
+  border-radius: 3px;
+}
+
+.zoom:empty {
+  display: none;
+}
+
+.vp-hint {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 4px;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #f0f0f0;
+  text-shadow: 0 0 2px #000000, 0 0 3px #000000;
+  pointer-events: none;
+}
+
+/* ---------- кнопки действий ---------- */
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 8px;
+}
+
+.source {
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1 1 auto;
+  height: 26px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--text);
+  background: var(--ctl);
+  border: 1px solid var(--ctl-border);
+  border-radius: 4px;
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--ctl-hover);
+}
+
+.btn.primary {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+}
+
+.btn.small {
+  height: 22px;
+  font-size: 11px;
+}
+
+.status {
+  min-height: 17px;
+  color: var(--text-dim);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--err);
+}
+
+/* ---------- параметры ---------- */
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 8px 8px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+
+.grp {
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.grp:last-child {
+  border-bottom: 0;
+}
+
+.grp > summary {
+  padding: 7px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  outline: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 4px 12px;
+  padding-bottom: 8px;
+}
+
+.fld {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  min-width: 0;
+}
+
+/* Зона перетаскивания: название параметра и значок со стрелками. За неё можно тянуть
+   влево-вправо, как в Photoshop; значок и подсветка при наведении это подсказывают. */
+.fld-scrub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.fld-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fld-grip {
+  display: flex;
+  flex: 0 0 auto;
+  color: #808080;
+}
+
+.fld-scrub:hover .fld-name,
+.fld.scrubbing .fld-name {
+  color: var(--text);
+}
+
+.fld-scrub:hover .fld-grip,
+.fld.scrubbing .fld-grip {
+  color: var(--accent-hover);
+}
+
+.fld.disabled .fld-scrub {
+  cursor: default;
+}
+
+.fld.disabled .fld-grip {
+  visibility: hidden;
+}
+
+/* Строка-подсказка над параметрами */
+.ctl-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 0 5px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-dim);
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.ctl-hint .fld-grip {
+  margin-top: 4px;
+  color: var(--accent-hover);
+}
+
+.fld-box {
+  display: flex;
+  align-items: center;
+  flex: 0 0 82px;
+  height: 22px;
+  background: var(--field);
+  border: 1px solid var(--field-border);
+  border-radius: 3px;
+}
+
+.fld-box:focus-within {
+  border-color: var(--accent);
+}
+
+.fld-box input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 20px;
+  padding: 0 2px 0 5px;
+  font: inherit;
+  color: var(--text);
+  text-align: right;
+  background: transparent;
+  border: 0;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.unit {
+  flex: 0 0 auto;
+  min-width: 20px;
+  padding: 0 5px 0 2px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.chk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  grid-column: 1 / -1;
+  min-height: 22px;
+  color: var(--text);
+}
+
+.chk input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+/* Переключатель с подписью */
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  grid-column: 1 / -1;
+}
+
+.choice-label {
+  color: var(--text-dim);
+}
+
+/* Ползунок с числом справа */
+.rng {
+  grid-column: 1 / -1;
+  height: 24px;
+}
+
+.rng-name {
+  flex: 0 0 auto;
+  color: var(--text-dim);
+}
+
+.rng input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 60px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.rng-value {
+  flex: 0 0 46px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- пресеты контура ---------- */
+
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+.presets-title {
+  color: var(--text-dim);
+}
+
+.presets-save,
+.presets-row {
+  display: flex;
+  gap: 4px;
+}
+
+.presets-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  font: inherit;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--field-border);
+  border-radius: 3px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.presets-name:focus {
+  border-color: var(--accent);
+}
+
+.presets-save .btn {
+  flex: 0 0 auto;
+}
+
+.presets-apply {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.presets-remove {
+  flex: 0 0 26px;
+  padding: 0;
+}
+
+.presets-empty {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+/* ---------- диагностика ---------- */
+
+pre {
+  max-height: 150px;
+  margin: 6px 0;
+  padding: 6px;
+  overflow: auto;
+  font: 10px/1.4 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg-deep);
+  border-radius: 3px;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+pre:empty {
+  display: none;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wrap 3D</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #323232;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      #wrap3dView {
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Весь интерфейс и 3D-рендер живут в WebView с локальным HTML (UXP 8.0+, Photoshop 26.0+). -->
+    <webview
+      id="wrap3dView"
+      src="plugin:/webview/index.html"
+      width="100%"
+      height="100%"
+      uxpAllowInspector="true"
+    ></webview>
+    <script src="main.js"></script>
+  </body>
+</html>

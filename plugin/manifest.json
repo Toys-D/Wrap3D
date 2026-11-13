@@ -1,0 +1,58 @@
+{
+  "id": "wrap3d.label.plugin",
+  "name": "Wrap 3D",
+  "version": "1.0.0",
+  "main": "index.html",
+  "manifestVersion": 5,
+  "host": {
+    "app": "PS",
+    "minVersion": "26.0.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "wrap3dPanel",
+      "label": {
+        "default": "Wrap 3D"
+      },
+      "minimumSize": { "width": 320, "height": 420 },
+      "maximumSize": { "width": 4000, "height": 4000 },
+      "preferredDockedSize": { "width": 380, "height": 620 },
+      "preferredFloatingSize": { "width": 520, "height": 720 },
+      "icons": [
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/dark.png",
+          "scale": [1, 2],
+          "theme": ["darkest", "dark", "medium"]
+        },
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/light.png",
+          "scale": [1, 2],
+          "theme": ["lightest", "light"]
+        }
+      ]
+    }
+  ],
+  "requiredPermissions": {
+    "webview": {
+      "allow": "yes",
+      "domains": [],
+      "allowLocalRendering": "yes",
+      "enableMessageBridge": "localAndRemote"
+    }
+  },
+  "icons": [
+    {
+      "width": 48,
+      "height": 48,
+      "path": "icons/plugin.png",
+      "scale": [1, 2],
+      "theme": ["darkest", "dark", "medium", "lightest", "light"],
+      "species": ["pluginList"]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wrap 3D</title>
+    <!-- Только относительные пути: так требует документация UXP для локального содержимого WebView. -->
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="bar">
+        <span class="title">Wrap 3D</span>
+        <span class="spacer"></span>
+        <div class="seg" role="group" aria-label="Language">
+          <button type="button" id="langRu" class="seg-btn">RU</button>
+          <button type="button" id="langEn" class="seg-btn">EN</button>
+        </div>
+      </header>
+
+      <div class="body">
+      <main id="viewport">
+        <div id="docframe"><canvas id="backdrop"></canvas></div>
+        <canvas id="gl"></canvas>
+        <canvas id="editor"></canvas>
+        <div id="hint" data-i18n="hint.empty"></div>
+        <div class="vp-tools vp-left seg" role="group">
+          <button type="button" id="mode-form" class="seg-btn" data-i18n="mode.form" disabled>Форма</button>
+          <button type="button" id="mode-label" class="seg-btn" data-i18n="mode.label" disabled>Надпись</button>
+          <button type="button" id="mode-tilt" class="seg-btn" data-i18n="mode.tilt" disabled>Наклон</button>
+          <button type="button" id="mode-contour" class="seg-btn" data-i18n="mode.contour" hidden disabled>Контур</button>
+        </div>
+        <div id="contourTools" class="vp-tools vp-left vp-second" hidden>
+          <div class="seg" role="group">
+            <button type="button" id="ptSharp" class="seg-btn" data-i18n="btn.pointSharp" disabled>Острая</button>
+            <button type="button" id="ptSmooth" class="seg-btn" data-i18n="btn.pointSmooth" disabled>Сглаженная</button>
+          </div>
+          <button type="button" id="ptDelete" class="seg-btn solo" data-i18n="btn.pointDelete" disabled>Удалить точку</button>
+        </div>
+        <div class="vp-tools vp-right">
+          <span id="zoom" class="zoom"></span>
+          <button type="button" id="btnFit" class="seg-btn solo" data-i18n="btn.fit" disabled>Вписать</button>
+        </div>
+        <div id="mouseHint" class="vp-hint"></div>
+      </main>
+
+      <aside class="side">
+      <section class="actions">
+        <div id="source" class="source"></div>
+        <div class="row">
+          <button type="button" id="btnLoad" class="btn" data-i18n="btn.load" disabled>Взять выделенный слой</button>
+          <button type="button" id="btnApply" class="btn primary" data-i18n="btn.apply" disabled>Применить</button>
+        </div>
+        <div id="status" class="status"></div>
+      </section>
+
+      <section class="scroll">
+        <div id="controls"></div>
+        <details id="diag" class="grp">
+          <summary data-i18n="diag.title">Диагностика</summary>
+          <pre id="diagInfo"></pre>
+          <button type="button" id="btnBench" class="btn small" data-i18n="diag.bench" disabled>Тест скорости передачи</button>
+          <pre id="diagLog"></pre>
+        </details>
+      </section>
+      </aside>
+      </div>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>

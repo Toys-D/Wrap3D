@@ -1,0 +1,25 @@
+{
+  "name": "wrap3d-photoshop-plugin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wrap 3D — a Photoshop UXP plugin that wraps a label or a logo around a 3D shape",
+  "license": "GPL-3.0",
+  "author": "Pixmap Labs",
+  "homepage": "https://github.com/Toys-D/Wrap3D",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Toys-D/Wrap3D.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Toys-D/Wrap3D/issues"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test",
+    "package": "node build.mjs && node scripts/package.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "three": "^0.187.0"
+  }
+}
